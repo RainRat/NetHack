@@ -1374,7 +1374,7 @@ m_consume_obj(struct monst *mtmp, struct obj *otmp)
                                               || corpsenm == PM_LARGE_MIMIC
                                               || corpsenm == PM_GIANT_MIMIC));
         slimer = (otmp->otyp == GLOB_OF_GREEN_SLIME);
-        poly = polyfodder(otmp);
+        poly = polyfood(otmp);
         grow = mlevelgain(otmp);
         heal = mhealup(otmp);
         eyes = (otmp->otyp == CARROT);
@@ -1632,7 +1632,7 @@ meatcorpse(
         /* skip some corpses */
         if (vegan(corpsepm) /* ignore veggy corpse even if omnivorous */
             /* don't eat harmful corpses */
-            || (touch_petrifies(corpsepm) && !resists_ston(mtmp)))
+            || (flesh_petrifies(corpsepm) && !resists_ston(mtmp)))
             continue;
         if (is_rider(corpsepm)) {
             boolean revived_it = revive_corpse(otmp);

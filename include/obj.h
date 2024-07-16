@@ -306,10 +306,10 @@ struct obj {
 #define ofood(o) ((o)->otyp == CORPSE || (o)->otyp == EGG || (o)->otyp == TIN)
     /* note: sometimes eggs and tins have special corpsenm values that
        shouldn't be used as an index into mons[]                       */
-#define polyfodder(obj) \
+#define polyfood(obj) \
     (ofood(obj) && (obj)->corpsenm >= LOW_PM                            \
      && (pm_to_cham((obj)->corpsenm) != NON_PM                          \
-                    || dmgtype(&mons[(obj)->corpsenm], AD_POLY)))
+         || dmgtype(&mons[(obj)->corpsenm], AD_POLY)))
 #define mlevelgain(obj) (ofood(obj) && (obj)->corpsenm == PM_WRAITH)
 #define mhealup(obj) (ofood(obj) && (obj)->corpsenm == PM_NURSE)
 #define Is_pudding(o) \
