@@ -914,6 +914,8 @@ discard_migrations(void)
             mtmp->nmon = 0;
             discard_minvent(mtmp, FALSE);
             /* bypass mongone() and its call to m_detach() plus dmonsfree() */
+            if (emits_light(mtmp->data))
+                del_light_source(LS_MONSTER, monst_to_any(mtmp));
             dealloc_monst(mtmp);
         }
     }
@@ -936,6 +938,12 @@ discard_migrations(void)
             otmp->where = OBJ_FREE;
             otmp->owornmask = 0L; /* overloaded for destination usage;
                                    * obfree() will complain if nonzero */
+            /*
+             * obfree(otmp,)
+             *  -> dealloc_obj(otmp)
+             *      -> obj_stop_timers(otmp)
+             *      -> del_light_source(LS_OBJECT, obj_to_any(otmp))
+             */
             obfree(otmp, (struct obj *) 0); /* releases any contents too */
         }
     }
