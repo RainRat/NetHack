@@ -959,6 +959,7 @@ extern void del_engr_at(coordxy, coordxy);
 extern int freehand(void);
 extern int doengrave(void);
 extern void sanitize_engravings(void);
+extern void forget_engravings(void);
 extern void engraving_sanity_check(void);
 extern void save_engravings(NHFILE *) NONNULLARG1;
 extern void rest_engravings(NHFILE *) NONNULLARG1;
@@ -1784,6 +1785,7 @@ extern void adj_erinys(unsigned);
 extern void see_monster_closeup(struct monst *) NONNULLARG1;
 extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
+extern void flash_mon(struct monst *) NONNULLARG1;
 
 /* ### mondata.c ### */
 
