@@ -148,8 +148,7 @@ struct window_procs tty_procs = {
     tty_get_color_string,
 #endif
 
-    /* other defs that really should go away (they're tty specific) */
-    tty_start_screen, tty_end_screen, genl_outrip,
+    genl_outrip,
     tty_preference_update,
     tty_getmsghistory, tty_putmsghistory,
     tty_status_init,
@@ -197,7 +196,7 @@ static int clipy = 0, clipymax = 0;
 extern void adjust_cursor_flags(struct WinDesc *);
 #endif
 
-#if defined(ASCIIGRAPH) && !defined(NO_TERMS)
+#if defined(ASCIIGRAPH)
 boolean GFlag = FALSE;
 boolean HE_resets_AS; /* see termcap.c */
 #endif
@@ -518,9 +517,9 @@ tty_init_nhwindows(int *argcp UNUSED, char **argv UNUSED)
     /*
      *  Remember tty modes, to be restored on exit.
      *
-     *  gettty() must be called before tty_startup()
+     *  gettty() must be called before term_startup()
      *    due to ordering of LI/CO settings
-     *  tty_startup() must be called before initoptions()
+     *  term_startup() must be called before initoptions()
      *    due to ordering of graphics settings
      */
 #if defined(UNIX) || defined(VMS)
@@ -529,8 +528,8 @@ tty_init_nhwindows(int *argcp UNUSED, char **argv UNUSED)
     gettty();
 
     /* to port dependant tty setup */
-    tty_startup(&wid, &hgt);
-    setftty(); /* calls start_screen */
+    term_startup(&wid, &hgt);
+    setftty(); /* calls term_start_screen */
     term_curs_set(0);
 
     /* set up tty descriptor */
@@ -793,7 +792,7 @@ void
 tty_resume_nhwindows(void)
 {
     gettty();
-    setftty(); /* calls start_screen */
+    setftty(); /* calls term_start_screen */
     term_curs_set(0);
     docrt();
 }
@@ -840,12 +839,7 @@ tty_exit_nhwindows(const char *str)
     ttyDisplay = (struct DisplayDesc *) 0;
 #endif
 
-#ifndef NO_TERMS    /*(until this gets added to the window interface)*/
-    tty_shutdown(); /* cleanup termcap/terminfo/whatever */
-#endif
-#ifdef WIN32CON
-    consoletty_exit();
-#endif
+    term_shutdown(); /* cleanup termcap/terminfo/whatever */
     iflags.window_inited = 0;
 }
 
@@ -2871,10 +2865,10 @@ tty_ctrl_nhwindow(
             wri->tocore.havecols = (int) ttyDisplay->cols;
             if (!tty_ok) {
 #ifdef RESIZABLE
-                /* terminal isn't big enough right now but player might 
-		 * resize it and then use 'm O' to try to set 'perm_invent'
-		 * again
-		 */
+                /* terminal isn't big enough right now but player might
+                 * resize it and then use 'm O' to try to set 'perm_invent'
+                 * again
+                 */
                 wri->tocore.tocore_flags |= too_small;
 #else
                 wri->tocore.tocore_flags |= prohibited;
@@ -2883,7 +2877,7 @@ tty_ctrl_nhwindow(
                 maxslot = (maxrow - 2) * (!inuse_only ? 2 : 1);
                 wri->tocore.maxslot = maxslot;
             }
-	}
+        }
 #endif  /* TTY_PERM_INVENT */
         break;
     case set_menu_promptstyle:
@@ -3401,7 +3395,7 @@ ttyinv_populate_slot(
         if (cell->color != color + 1) {
             /* offset color by 1 so 0 is not valid */
             if (ccnt >= (col + clroffset))
-                cell->color = color + 1; 
+                cell->color = color + 1;
             else
                 cell->color = NO_COLOR + 1;
             cell->refresh = 1;
@@ -3551,10 +3545,10 @@ assesstty(
 
     if (!ttyDisplay) {
         /* too early */
-	*offx = *offy = *rows = *cols = 0;
+        *offx = *offy = *rows = *cols = 0;
         *maxcol = 0;
-	*minrow = *maxrow = 0;
-	return !(*rows < perminv_minrow || *cols < tty_perminv_mincol);
+        *minrow = *maxrow = 0;
+        return !(*rows < perminv_minrow || *cols < tty_perminv_mincol);
     }
 
     *offx = 0;
@@ -3720,15 +3714,15 @@ end_glyphout(void)
     }
 }
 
-#ifndef WIN32CON
 void
 g_putch(int in_ch)
 {
     char ch = (char) in_ch;
 
+#ifndef WIN32CON
     HUPSKIP();
 
-#if defined(ASCIIGRAPH) && !defined(NO_TERMS)
+#if defined(ASCIIGRAPH)
     if (SYMHANDLING(H_UTF8)) {
         (void) putchar(ch);
     } else if (SYMHANDLING(H_IBM)
@@ -3762,14 +3756,16 @@ g_putch(int in_ch)
         (void) putchar(ch);
     }
 
-#else
+#else  /* ?ASCIIGRAPH */
     (void) putchar(ch);
 
-#endif /* ASCIIGRAPH && !NO_TERMS */
-
+#endif /* ASCIIGRAPH */
+#else  /* WIN32CON */
+    console_g_putch(in_ch);
+    nhUse(ch);
+#endif /* WIN32CON */
     return;
 }
-#endif /* !WIN32CON */
 
 #if defined(UNIX) || defined(VMS)
 #if defined(ENHANCED_SYMBOLS)
@@ -3965,13 +3961,12 @@ term_start_bgcolor(int color)
 {
     /* placeholder for now */
 }
-#endif  /* !MSDOS && !WIN32 */
-
 void
 term_curs_set(int visibility UNUSED)
 {
     /* nothing */
 }
+#endif
 
 #ifdef CHANGE_COLOR
 void
