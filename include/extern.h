@@ -414,7 +414,7 @@ extern int enter_explore_mode(void);
 extern boolean bind_mousebtn(int, const char *);
 extern boolean bind_key(uchar, const char *);
 extern void dokeylist(void);
-extern coordxy xytod(coordxy, coordxy);
+extern int xytod(coordxy, coordxy);
 extern void dtoxy(coord *, int);
 extern int movecmd(char, int);
 extern int dxdy_moveok(void);
@@ -3476,7 +3476,7 @@ extern int doextversion(void);
 extern boolean comp_times(long);
 #endif
 extern boolean check_version(struct version_info *, const char *, boolean,
-                             unsigned long) NONNULLARG12;
+                             unsigned long) NONNULLARG1;
 extern boolean uptodate(NHFILE *, const char *, unsigned long) NONNULLARG1;
 extern void store_formatindicator(NHFILE *) NONNULLARG1;
 extern void store_version(NHFILE *) NONNULLARG1;
