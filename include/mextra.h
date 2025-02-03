@@ -75,6 +75,7 @@ struct fakecorridor {
 };
 
 struct egd {
+    unsigned parentmid;   /* make clobber-detection possible */
     int fcbeg, fcend;     /* fcend: first unused pos */
     int vroom;            /* room number of the vault */
     coordxy gdx, gdy;     /* goal of guard's walk */
@@ -92,6 +93,7 @@ struct egd {
  **     formerly epri.h -- temple priest extension
  */
 struct epri {
+    unsigned parentmid;   /* make clobber-detection possible */
     aligntyp shralign; /* alignment of priest's shrine */
     schar shroom;      /* index in rooms */
     coord shrpos;      /* position of shrine */
@@ -118,6 +120,7 @@ struct bill_x {
 };
 
 struct eshk {
+    unsigned parentmid;   /* make clobber-detection possible */
     long robbed;          /* amount stolen by most recent customer */
     long credit;          /* amount credited to customer */
     long debit;           /* amount of debt for using unpaid items */
@@ -145,6 +148,7 @@ struct eshk {
  **     formerly emin.h -- minion extension
  */
 struct emin {
+    unsigned parentmid;   /* make clobber-detection possible */
     aligntyp min_align; /* alignment of minion */
     boolean renegade;   /* hostile co-aligned priest or Angel */
 };
@@ -165,6 +169,7 @@ enum dogfood_types {
 };
 
 struct edog {
+    unsigned parentmid;       /* make clobber-detection possible */
     long droptime;            /* moment dog dropped object */
     unsigned dropdist;        /* dist of dropped obj from @ */
     int apport;               /* amount of training */
@@ -177,6 +182,18 @@ struct edog {
     Bitfield(killed_by_u, 1); /* you attempted to kill him */
 };
 
+/* for saving the hero's rank in bones monster */
+struct mon_former_rank {
+    int lev;
+    short mnum;
+    boolean female;
+};
+
+struct former_incarnation {
+    unsigned parentmid;           /* make clobber-detection possible */
+    struct mon_former_rank rank;  /* for bones' ghost rank in former life */
+};
+
 /***
  **     mextra.h -- collection of all monster extensions
  */
@@ -187,6 +204,7 @@ struct mextra {
     struct eshk *eshk;
     struct emin *emin;
     struct edog *edog;
+    struct former_incarnation *former;
     int mcorpsenm; /* obj->corpsenm for mimic posing as statue or corpse,
                     * obj->spe (fruit index) for one posing as a slime mold,
                     * or an alignment mask for one posing as an altar */
@@ -198,6 +216,7 @@ struct mextra {
 #define ESHK(mon) ((mon)->mextra->eshk)
 #define EMIN(mon) ((mon)->mextra->emin)
 #define EDOG(mon) ((mon)->mextra->edog)
+#define FORMER(mon) ((mon)->mextra->former)
 #define MCORPSENM(mon) ((mon)->mextra->mcorpsenm)
 
 #define has_mgivenname(mon) ((mon)->mextra && MGIVENNAME(mon))
@@ -206,6 +225,7 @@ struct mextra {
 #define has_eshk(mon)  ((mon)->mextra && ESHK(mon))
 #define has_emin(mon)  ((mon)->mextra && EMIN(mon))
 #define has_edog(mon)  ((mon)->mextra && EDOG(mon))
+#define has_former(mon) ((mon)->mextra && FORMER(mon))
 #define has_mcorpsenm(mon) ((mon)->mextra && MCORPSENM(mon) != NON_PM)
 
 #endif /* MEXTRA_H */

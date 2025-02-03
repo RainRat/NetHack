@@ -2567,6 +2567,12 @@ copy_mextra(struct monst *mtmp2, struct monst *mtmp1)
         assert(has_edog(mtmp2));
         *EDOG(mtmp2) = *EDOG(mtmp1);
     }
+    if (FORMER(mtmp1)) {
+        if (!FORMER(mtmp2))
+            newformer(mtmp2);
+        assert(has_former(mtmp2));
+        *FORMER(mtmp2) = *FORMER(mtmp1);
+    }
     if (has_mcorpsenm(mtmp1))
         MCORPSENM(mtmp2) = MCORPSENM(mtmp1);
 }
@@ -2589,6 +2595,8 @@ dealloc_mextra(struct monst *m)
             free((genericptr_t) x->emin), x->emin = 0;
         if (x->edog)
             free((genericptr_t) x->edog), x->edog = 0;
+        if (x->former)
+            free((genericptr_t) x->former), x->former = 0;
         x->mcorpsenm = NON_PM; /* no allocation to release */
 
         free((genericptr_t) x);
@@ -2990,8 +2998,6 @@ logdeadmon(struct monst *mtmp, int mndx)
         }
     }
 }
-
-#undef livelog_mon_nam
 
 /* monster 'mtmp' has died; maybe life-save, otherwise unshapeshift and
    update vanquished stats and update map */
@@ -3635,10 +3641,24 @@ xkilled(
 
     /* malign was already adjusted for u.ualign.type and randomization */
     adjalign(mtmp->malign);
+
+#if 0  /* HARDFOUGHT-only at present */
+#ifdef LIVELOG
+    if (has_former(mtmp) && FORMER(mtmp)->rank.mnum != NON_PM) {
+        livelog_printf(LL_UMONST, "destroyed %s, %s former %s",
+                       livelog_mon_nam(mtmp),
+                       (mtmp->data == &mons[PM_GHOST]) ? "the" : "and",
+                       rank_of(FORMER(mtmp)->rank.lev,
+                               FORMER(mtmp)->rank.mnum,
+                               FORMER(mtmp)->rank.female));
+    }
+#endif  /* LIVELOG */
+#endif
     return;
 }
 
 #undef LEVEL_SPECIFIC_NOCORPSE
+#undef livelog_mon_nam
 
 /* changes the monster into a stone monster of the same type
    this should only be called when poly_when_stoned() is true */

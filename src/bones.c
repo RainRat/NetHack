@@ -506,6 +506,13 @@ savebones(int how, time_t when, struct obj *corpse)
         mtmp->mhp = mtmp->mhpmax = u.uhpmax;
         mtmp->female = flags.female;
         mtmp->msleeping = 1;
+        if (!has_former(mtmp))
+            newformer(mtmp);
+        if (has_former(mtmp)) {
+            FORMER(mtmp)->rank.lev = mtmp->m_lev;
+            FORMER(mtmp)->rank.mnum = Role_switch;
+            FORMER(mtmp)->rank.female = flags.female;
+        }
     }
     for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
         set_ghostly_objlist(mtmp->minvent);
