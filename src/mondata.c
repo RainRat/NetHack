@@ -1,4 +1,4 @@
-/* NetHack 3.7	mondata.c	$NHDT-Date: 1711620615 2024/03/28 10:10:15 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.132 $ */
+/* NetHack 3.7	mondata.c	$NHDT-Date: 1738638877 2025/02/03 19:14:37 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.140 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -120,6 +120,64 @@ defended(struct monst *mon, int adtyp)
     if (o && Is_dragon_armor(o) && defends(adtyp, o))
         return TRUE;
 
+    return FALSE;
+}
+
+/* returns True if monster resists particular elemental damage; mostly used
+   in order to check effects of carried artifacts */
+boolean
+Resists_Elem(struct monst *mon, int proptyp)
+{
+    struct obj *o;
+    long slotmask;
+    boolean is_you = (mon == &gy.youmonst);
+    int u_resist = 0, dmgtyp = 0, restyp = 0;
+
+    switch (proptyp) {
+    case FIRE_RES:
+    case COLD_RES:
+    case SLEEP_RES:
+    case DISINT_RES:
+    case SHOCK_RES:
+    case POISON_RES:
+    case ACID_RES:
+    case STONE_RES:
+        dmgtyp = restyp = proptyp + 1; /* valid for dmgtyp|restyp 2..9 */
+        u_resist = u.uprops[proptyp].intrinsic || u.uprops[proptyp].extrinsic;
+        break;
+
+    /* accept these, but we expect callers to use their routines directly */
+    case ANTIMAGIC:
+        return resists_magm(mon);
+    case DRAIN_RES:
+        return resists_drli(mon);
+    case BLND_RES:
+        return resists_blnd(mon);
+
+    default:
+        impossible("Resists_Elem(%d), unexpected property type", proptyp);
+        return FALSE;
+    }
+
+    if (is_you ? u_resist : ((mon_resistancebits(mon) & restyp) != 0))
+        return TRUE;
+    /* check for resistance granted by wielded weapon */
+    o = is_you ? uwep : MON_WEP(mon);
+    if (o && o->oartifact && defends(dmgtyp, o))
+        return TRUE;
+    /* check for resistance granted by worn or carried items */
+    o = is_you ? gi.invent : mon->minvent;
+    slotmask = W_ARMOR | W_ACCESSORY;
+    if (!is_you /* assumes monsters don't wield non-weapons */
+        || (uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))))
+        slotmask |= W_WEP;
+    if (is_you && u.twoweap)
+        slotmask |= W_SWAPWEP;
+    for (; o; o = o->nobj)
+        if (((o->owornmask & slotmask) != 0L
+             && objects[o->otyp].oc_oprop == restyp)
+            || (o->oartifact && defends_when_carried(dmgtyp, o)))
+            return TRUE;
     return FALSE;
 }
 
