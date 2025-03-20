@@ -1442,7 +1442,7 @@ hit_bars(
                weight is normally 480 but can be increased by increments
                of 160 (scrolls of punishment read while already punished) */
             int spe = ((otmp->otyp == HEAVY_IRON_BALL) /* 3+ for iron ball */
-                       ? ((int) otmp->owt / IRON_BALL_W_INCR)
+                       ? ((int) otmp->owt / WT_IRON_BALL_INCR)
                        : otmp->spe);
             /* chance: used in saving throw for the bars; more likely to
                break those when 'chance' is _lower_; acurrstr(): 3..25 */
