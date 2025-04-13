@@ -283,6 +283,8 @@ mk_artifact(
             otmp = 0;
         } /* otherwise, otmp has not changed; just fallthrough to return it */
     }
+    if (permapoisoned(otmp))
+        otmp->opoisoned = 1;
     return otmp;
 }
 
@@ -2009,6 +2011,31 @@ arti_invoke(struct obj *obj)
             }
             break;
         }
+        case FLING_POISON:
+            if (getdir((char *) 0)) {
+                int venom = rn2(2) ? BLINDING_VENOM : ACID_VENOM;
+                struct obj *otmp = mksobj(venom, TRUE, FALSE);
+
+                otmp->spe = 1; /* the poison is yours */
+                throwit(otmp, 0L, FALSE, (struct obj *) 0);
+            } else {
+                /* no direction picked */
+                pline("%s", Never_mind);
+                obj->age = svm.moves;
+            }
+            break;
+        case SNOWSTORM:
+        case FIRESTORM:
+            {
+                int storm = oart->inv_prop == SNOWSTORM ? SPE_CONE_OF_COLD : SPE_FIREBALL;
+                int skill = spell_skilltype(storm);
+                int expertise = P_SKILL(skill);
+
+                P_SKILL(skill) = P_EXPERT;
+                (void) spelleffects(storm, FALSE, TRUE);
+                P_SKILL(skill) = expertise;
+            }
+            break;
         case BLINDING_RAY:
             if (getdir((char *) 0)) {
                 if (u.dx || u.dy) {
@@ -2698,5 +2725,12 @@ get_artifact(struct obj *obj)
             return &artilist[artidx];
     }
     return &artilist[ART_NONARTIFACT];
+}
+
+/* is object permanently poisoned? (currently only Grimtooth) */
+boolean
+permapoisoned(struct obj *obj)
+{
+    return (obj && is_art(obj, ART_GRIMTOOTH));
 }
 /*artifact.c*/

@@ -432,6 +432,7 @@ nhl_gettrap(lua_State *L)
                                     get_trapname_bytype(ttmp->ttyp));
             nhl_add_table_entry_bool(L, "tseen", ttmp->tseen);
             nhl_add_table_entry_bool(L, "madeby_u", ttmp->madeby_u);
+            nhl_add_table_entry_bool(L, "once", ttmp->once);
             switch (ttmp->ttyp) {
             case SQKY_BOARD:
                 nhl_add_table_entry_int(L, "tnote", ttmp->tnote);
@@ -990,7 +991,7 @@ nhl_get_debug_themerm_name(lua_State *L)
         lua_pop(L, 1);
         if (wizard)
             dbg_themerm = getenv(is_fill ? "THEMERMFILL" : "THEMERM");
-        if (!dbg_themerm || strlen(dbg_themerm) == 0) {
+        if (!dbg_themerm || !*dbg_themerm) {
             lua_pushnil(L);
         } else {
             lua_pushstring(L, dbg_themerm);
