@@ -204,7 +204,6 @@ dosave0(void)
             HUP done(TRICKED);
             goto done;
         }
-        minit(); /* ZEROCOMP */
         getlev(onhfp, svh.hackpid, ltmp);
         close_nhfile(onhfp);
         if (nhfp->structlevel) {
@@ -531,9 +530,12 @@ savelev_core(NHFILE *nhfp, xint8 lev)
             bwrite(nhfp->fd, (genericptr_t) &svl.lastseentyp[c][r],
                    sizeof(schar));
         }
+    /* svm.moves below will actually be read back into svo.omoves on restore */
     if (nhfp->structlevel) {
         bwrite(nhfp->fd, (genericptr_t) &svm.moves, sizeof svm.moves);
-        save_stairs(nhfp);
+    }
+    save_stairs(nhfp);
+    if (nhfp->structlevel) {
         bwrite(nhfp->fd, (genericptr_t) &svu.updest, sizeof(dest_area));
         bwrite(nhfp->fd, (genericptr_t) &svd.dndest, sizeof(dest_area));
         bwrite(nhfp->fd, (genericptr_t) &svl.level.flags,
