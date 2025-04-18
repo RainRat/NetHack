@@ -505,6 +505,9 @@ savelev_core(NHFILE *nhfp, xint8 lev)
            create statue trap then immediately level teleport) */
         if (iflags.purge_monsters)
             dmonsfree();
+        /* clear objs_deleted list too */
+        if (go.objs_deleted)
+            dobjsfree(); /* really free deleted objects */
 
         if (lev >= 0 && lev <= maxledgerno())
             svl.level_info[lev].flags |= VISITED;
@@ -850,7 +853,9 @@ saveobjchn(NHFILE *nhfp, struct obj **obj_p)
                 setworn((struct obj *) 0,
                         otmp->owornmask & (W_BALL | W_CHAIN));
             otmp->owornmask = 0L;   /* no longer care */
+            program_state.freeingdata++;
             dealloc_obj(otmp);
+            program_state.freeingdata--;
         }
         otmp = otmp2;
     }
@@ -1197,6 +1202,7 @@ freedynamicdata(void)
 
     /* move-specific data */
     dmonsfree(); /* release dead monsters */
+    /* dobjsfree(); // handled below */
     alloc_itermonarr(0U); /* a request of 0 releases existing allocation */
 
     /* level-specific data */
@@ -1209,8 +1215,6 @@ freedynamicdata(void)
     free_light_sources(RANGE_GLOBAL);
     freeobjchn(gi.invent);
     freeobjchn(gm.migrating_objs);
-    if (go.objs_deleted)
-        dobjsfree(); /* really free deleted objects */
     freemonchn(gm.migrating_mons);
     freemonchn(gm.mydogs); /* ascension or dungeon escape */
     /* freelevchn();  --  [folded into free_dungeons()] */
@@ -1226,6 +1230,9 @@ freedynamicdata(void)
     cmdq_clear(CQ_CANNED);
     cmdq_clear(CQ_REPEAT);
     free_tutorial(); /* (only needed if quitting while in tutorial) */
+
+    /* per-turn data, but might get added to when freeing other stuff */
+    dobjsfree(); /* really free deleted objects */
 
     /* some pointers in iflags */
     if (iflags.wc_font_map)
