@@ -133,6 +133,9 @@ for i = 1, 4 do
               coord = locs[i], victim = false });
 end
 
+des.engraving({ coord = { 15,15 }, type = "engrave", text = "Some traps can be disabled with '" .. tut_key("untrap") .. "'", degrade = false });
+des.trap({ coord = { 15,16 }, type = "web", spider_on_web = false });
+
 --
 
 des.door({ coord = { 18,13 }, state = "closed" });
@@ -320,6 +323,11 @@ des.object({ coord = { 57,2 }, id = "spellbook of light", buc = "blessed" });
 des.engraving({ coord = { 55,2 }, type = "engrave", text = "Read the spellbook with '" .. tut_key("read") .. "'", degrade = false });
 des.engraving({ coord = { 53,2 }, type = "engrave", text = "Use '" .. tut_key("cast") .. "' to cast a spell", degrade = false });
 des.region(selection.area(53,01, 59, 3), "unlit");
+
+--
+
+des.engraving({ coord = { 72,2 }, type = "engrave", text = "You \"quaff\" potions with '" .. tut_key("quaff") .. "'", degrade = false });
+des.object({ coord = { 72,2 }, id = "potion of object detection", buc = "blessed" });
 
 
 ----------------
