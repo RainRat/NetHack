@@ -663,7 +663,7 @@ hitum_cleave(
     int count, umort, x = u.ux, y = u.uy;
 
     /* find the direction toward primary target */
-    i = xytod(u.dx, u.dy);
+    i = xytodir(u.dx, u.dy);
     if (i == DIR_ERR) {
         impossible("hitum_cleave: unknown target direction [%d,%d,%d]?",
                    u.dx, u.dy, u.dz);
@@ -929,6 +929,13 @@ hmon_hitmon_weapon_melee(
     hmd->dmg = dmgval(obj, mon);
     /* a minimal hit doesn't exercise proficiency */
     hmd->train_weapon_skill = (hmd->dmg > 1);
+
+    /* Healer with anatomy knowledge */
+    if (Role_if(PM_HEALER) && hmd->hand_to_hand
+        && obj->oclass == WEAPON_CLASS
+        && objects[obj->otyp].oc_skill == P_KNIFE)
+        hmd->dmg += min(3, svm.mvitals[monsndx(mon->data)].died / 6);
+
     /* special attack actions */
     if (!hmd->train_weapon_skill || mon == u.ustuck || u.twoweap
         /* Cleaver can hit up to three targets at once so don't
